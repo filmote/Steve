@@ -1,6 +1,8 @@
 #include <Arduboy2.h>
 #include "Images.h"
 
+#define NUMBER_OF_OBSTACLES 5
+
 enum Stance {
   Standing,
   Running1,
@@ -11,10 +13,11 @@ enum Stance {
 };
 
 enum ObstacleType {
-  Pterodactyl,
+  Pterodactyl1,
+  Pterodactyl2,
   SingleCactus,
   DoubleCactus,
-  TrippleCactus
+  TripleCactus
 };
 
 struct Dinosaur {
@@ -28,17 +31,18 @@ struct Obstacle {
   byte y;
   ObstacleType type;
   bool enabled;
+  
 };
 
 Arduboy2 arduboy;
 int frame = 0;
 
 Obstacle obstacles[5] = {
-  { 0, 0, Pterodactyl, false },
-  { 0, 0, Pterodactyl, false },
-  { 0, 0, Pterodactyl, false },
-  { 0, 0, Pterodactyl, false },
-  { 0, 0, Pterodactyl, false },
+  { 0, 0, Pterodactyl1, false },
+  { 0, 0, Pterodactyl1, false },
+  { 0, 0, Pterodactyl1, false },
+  { 0, 0, Pterodactyl1, false },
+  { 0, 0, Pterodactyl1, false },
 };
 
 Dinosaur steve = {0, 0, Standing};
@@ -91,6 +95,44 @@ void drawSteve() {
       Sprites::drawExternalMask(steve.x, steve.y - 21, dinosaur_dead, dinosaur_still_mask, frame, frame);
       break;
        
+  }
+  
+}
+
+void drawObstacles() {
+
+  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+
+    Obstacle thisObstacle = obstacles[i];
+    
+    if (thisObstacle.enabled == true) {
+
+      switch (thisObstacle.type) {
+
+        case Pterodactyl1:
+          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, pterodactyl_1, frame);
+          break;
+
+        case Pterodactyl2:
+          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, pterodactyl_2, frame);
+          break;
+
+        case SingleCactus:
+          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_1, frame);
+          break;
+
+        case DoubleCactus:
+          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_2, frame);
+          break;
+
+        case TripleCactus:
+          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_3, frame);
+          break;
+
+      }
+      
+    }
+    
   }
   
 }
