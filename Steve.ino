@@ -2,6 +2,8 @@
 #include "Images.h"
 
 #define NUMBER_OF_OBSTACLES 5
+#define GROUND_LEVEL 32
+#define JUMP_TOP_HEOGHT 10
 
 enum Stance {
   Standing,
@@ -24,6 +26,7 @@ struct Dinosaur {
   byte x;
   byte y;
   Stance stance;
+  byte goingUp;
 };
 
 struct Obstacle {
@@ -45,7 +48,7 @@ Obstacle obstacles[5] = {
   { 0, 0, Pterodactyl1, false },
 };
 
-Dinosaur steve = {0, 0, Standing};
+Dinosaur steve = {0, GROUND_LEVEL, Standing, false};
 
 unsigned int score = 0;
 
@@ -63,7 +66,42 @@ void loop() {
   if (!(arduboy.nextFrame()))
     return;
 
+  if (steve.y == GROUND_LEVEL) {
 
+    if (arduboy.justPressed(UP_BUTTON))       { steve.goingUp = true; }
+    if (arduboy.justPressed(DOWN_BUTTON))     { steve.stance = Ducking1; }
+    
+  }
+
+  updateSteve();
+  updateObstacles();
+
+  drawSteve();
+  drawObstacles();
+  
+}
+
+void updateSteve() {
+
+  switch (steve.stance) {
+
+    case Running1:
+      steve.stance = Running2;
+      break;
+    
+    case Running2:
+      steve.stance = Running1;
+      break;
+    
+    case Ducking1:
+      steve.stance = Ducking1;
+      break;
+    
+    case Ducking2:
+      steve.stance = Ducking2;
+      break;
+    
+   }
 
 }
 
@@ -95,6 +133,69 @@ void drawSteve() {
       Sprites::drawExternalMask(steve.x, steve.y - 21, dinosaur_dead, dinosaur_still_mask, frame, frame);
       break;
        
+  }
+  
+}
+
+Rect getSteveRect() {
+
+  switch (steve.stance) {
+
+    case Standing:
+    case Running1:
+    case Running2:
+    case Dead:
+      return Rect { steve.x, steve.y - 21, 18, 24 };
+
+    case Ducking1:
+    case Ducking2:
+      return Rect { steve.x, steve.y - 21, 26, 16 };
+       
+  }
+  
+}
+
+void updateObstacles() {
+
+  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+
+    Obstacle thisObstacle = obstacles[i];
+    
+    if (thisObstacle.enabled == true) {
+
+      switch (thisObstacle.type) {
+
+        case Pterodactyl1:
+          thisObstacle.type = Pterodactyl2;
+          thisObstacle.x--;
+          if (thisObstacle.x < 0) {
+            thisObstacle.enabled = false; 
+          }
+          break;
+
+        case Pterodactyl2:
+          thisObstacle.type = Pterodactyl1;
+          thisObstacle.x--;
+          if (thisObstacle.x < 0) {
+            thisObstacle.enabled = false; 
+          }
+          break;
+
+        case SingleCactus:
+        case DoubleCactus:
+        case TripleCactus:
+          if (arduboy.everyXFrames(2)) {
+            thisObstacle.x--;
+            if (thisObstacle.x < 0) {
+              thisObstacle.enabled = false; 
+            }
+          }
+          break;
+
+      }
+      
+    }
+    
   }
   
 }
@@ -135,5 +236,28 @@ void drawObstacles() {
     
   }
   
+}
+
+Rect getObstacleRect(byte index) {
+
+  Obstacle thisObstacle = obstacles[index];
+    
+  switch (thisObstacle.type) {
+
+    case Pterodactyl1:
+    case Pterodactyl2:
+      return Rect { thisObstacle.x, thisObstacle.y, 22, 16 };
+
+    case SingleCactus:
+      return Rect { thisObstacle.x, thisObstacle.y, 11, 24 };
+
+    case DoubleCactus:
+      return Rect { thisObstacle.x, thisObstacle.y, 23, 24 };
+
+    case TripleCactus:
+      return Rect { thisObstacle.x, thisObstacle.y, 35, 24 };
+
+  }
+
 }
 
