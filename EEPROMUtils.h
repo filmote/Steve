@@ -36,7 +36,6 @@ uint16_t EEPROMReadInt(int address) {
 }
 
 
-
 /* ----------------------------------------------------------------------------
  *   Is the EEPROM initialised? 
  *   
