@@ -1,9 +1,14 @@
 #include <Arduboy2.h>
+#include <EEPROM.h>
 #include "Images.h"
 
 #define NUMBER_OF_OBSTACLES 5
 #define GROUND_LEVEL 32
 #define JUMP_TOP_HEIGHT 10
+
+#define EEPROM_START_C1                 200
+#define EEPROM_START_C2                 EEPROM_START_C1 + 1
+#define EEPROM_SCORE                    EEPROM_START_C1 + 2
 
 enum GameStatus {
   Introduction,
@@ -58,10 +63,13 @@ Obstacle obstacles[5] = {
 Dinosaur steve = {0, GROUND_LEVEL, Standing, false, false};
 
 unsigned int score = 0;
+unsigned int highScore = 0;
+
 GameStatus gameStatus = Introduction;
 
 void setup() {
 
+  initEEPROM();
   arduboy.begin();
   arduboy.setFrameRate(60);
 
@@ -94,6 +102,7 @@ void loop() {
 
 void introduction() {
 
+  highScore = EEPROMReadInt(EEPROM_SCORE);
   arduboy.clear();
 
   steve.x = 0;
@@ -109,6 +118,7 @@ void introduction() {
   arduboy.drawLine(20, 107, 19, WHITE);
 
   drawSteve();
+  drawScoreboard(false);
   arduboy.display();
     
   if (arduboy.justPressed(A_BUTTON))                            { gameStatus = GameStatus::PlayGame; }
@@ -116,6 +126,11 @@ void introduction() {
 }
 
 void gameOver() {
+
+  if (score > highScore) {
+    EEPROMWriteInt(EEPROM_SCORE, score);
+    highScore = score;
+  }
 
   arduboy.clear();
 
@@ -125,6 +140,7 @@ void gameOver() {
   arduboy.drawLine(20, 107, 19, WHITE);
 
   drawSteve();
+  drawScoreboard(true);
   arduboy.display();
     
   if (arduboy.justPressed(A_BUTTON))                            { gameStatus = GameStatus::PlayGame; }
@@ -159,6 +175,7 @@ void playGame() {
   
     drawSteve();
     drawObstacles();
+    drawScoreboard(true);
 
     arduboy.display();
     
@@ -405,3 +422,78 @@ Rect getObstacleRect(byte index) {
 
 }
 
+void drawScoreboard(bool displayCurrentScore) {
+
+  if (displayCurrentScore) { 
+    
+    arduboy.setCursor(0, 0);
+    arduboy.print(F("Score: "));
+    if (score < 1000) arduboy.print("0");
+    if (score < 100) arduboy.print("0");
+    if (score < 10)  arduboy.print("0");
+    arduboy.print(score);
+       
+  }
+  
+  arduboy.setCursor(44, 0);
+  arduboy.print(F("High Score: "));
+  if (highScore < 1000) arduboy.print("0");
+  if (highScore < 100) arduboy.print("0");
+  if (highScore < 10)  arduboy.print("0");
+  arduboy.print(highScore);
+  
+  arduboy.drawLine(0, WIDTH, 11, WHITE);
+
+}
+
+/* ----------------------------------------------------------------------------
+ *   Is the EEPROM initialised? 
+ *   
+ *   Looks for the characters 'S' and 'T' in the first two bytes of the EEPROM
+ *   memory range starting from byte EEPROM_STORAGE_SPACE_START.  If not found,
+ *   it resets the settings ..
+ * ----------------------------------------------------------------------------
+ */
+void initEEPROM() {
+
+  uint8_t c1 = EEPROM.read(EEPROM_START_C1);
+  uint8_t c2 = EEPROM.read(EEPROM_START_C2);
+
+  if (c1 != 83 || c2 != 84) { 
+  
+    EEPROM.update(EEPROM_START_C1, 83);
+    EEPROM.update(EEPROM_START_C2, 84);
+    EEPROMWriteInt(EEPROM_SCORE, 0);
+      
+  }
+
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Write a 2 byte integer to the EEPROM at the specified address ..
+ * ----------------------------------------------------------------------------
+ */
+void EEPROMWriteInt(int address, int value) {
+  
+  uint8_t lowByte = ((value >> 0) & 0xFF);
+  uint8_t highByte = ((value >> 8) & 0xFF);
+  
+  EEPROM.write(address, lowByte);
+  EEPROM.write(address + 1, highByte);
+
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Read a 2 byte integer from the EEPROM at the specified address ..
+ * ----------------------------------------------------------------------------
+ */
+uint16_t EEPROMReadInt(int address) {
+  
+  uint8_t lowByte = EEPROM.read(address);
+  uint8_t highByte = EEPROM.read(address + 1);
+  
+  return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
+
+}
