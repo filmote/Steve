@@ -431,11 +431,11 @@ void drawSteve() {
       Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_ducking_2), dinosaur_ducking_2, dinosaur_ducking_2_mask, frame, frame);
       break;
 
-      case Stance::Dead1:
+    case Stance::Dead1:
       Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_1), dinosaur_dead_1, dinosaur_still_mask, frame, frame);
       break;
 
-      case Stance::Dead2:
+    case Stance::Dead2:
       Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_2), dinosaur_dead_2, dinosaur_dead_2_mask, frame, frame);
       break;
        
