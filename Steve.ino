@@ -24,7 +24,8 @@ enum Stance {
   Running2,
   Ducking1,
   Ducking2,
-  Dead,
+  Dead1,
+  Dead2,
 };
 
 enum ObstacleType {
@@ -202,6 +203,11 @@ void gameOver() {
   drawObstacles();
   drawScoreboard(true);
 
+
+  // Update Steve's image.  If he is dead and still standing, this will change him to lying on the ground ..
+
+  updateSteve();
+
   arduboy.display();
     
   if (arduboy.justPressed(A_BUTTON)) { 
@@ -269,7 +275,12 @@ void playGame() {
 
   if (collision()) {
 
-    steve.stance = Stance::Dead;
+    if (steve.stance <= Stance::Running2) {
+      steve.stance = Stance::Dead1;
+    }
+    else {
+      steve.stance = Stance::Dead2;
+    }
     gameStatus = GameStatus::GameOver;
 
   }
@@ -376,6 +387,10 @@ void updateSteve() {
     case Stance::Ducking2:
       steve.stance = Stance::Ducking2;
       break;
+    
+    case Stance::Dead1:
+      steve.stance = Stance::Dead2;
+      break;
 
     default:
       break;
@@ -416,8 +431,12 @@ void drawSteve() {
       Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_ducking_2), dinosaur_ducking_2, dinosaur_ducking_2_mask, frame, frame);
       break;
 
-    case Stance::Dead:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead), dinosaur_dead, dinosaur_still_mask, frame, frame);
+      case Stance::Dead1:
+      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_1), dinosaur_dead_1, dinosaur_still_mask, frame, frame);
+      break;
+
+      case Stance::Dead2:
+      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_2), dinosaur_dead_2, dinosaur_dead_2_mask, frame, frame);
       break;
        
   }
@@ -436,13 +455,14 @@ Rect getSteveRect() {
     case Stance::Standing:
     case Stance::Running1:
     case Stance::Running2:
-    case Stance::Dead:
+    case Stance::Dead1:
       return Rect { steve.x, steve.y - getImageHeight(dinosaur_still), getImageWidth(dinosaur_still), getImageHeight(dinosaur_still) };
 
     case Stance::Ducking1:
     case Stance::Ducking2:
+    case Stance::Dead2:
       return Rect { steve.x, steve.y - getImageHeight(dinosaur_ducking_2), getImageWidth(dinosaur_ducking_2), getImageHeight(dinosaur_ducking_2) };
-       
+             
   }
   
 }
