@@ -38,7 +38,7 @@ enum ObstacleType {
   Count_AllObstacles = 4,
 };
 
-enum RoadType {
+enum GroundType {
   Flat,
   Bump,
   Hole,
@@ -62,7 +62,7 @@ struct Obstacle {
 
 Arduboy2 arduboy;
 int frame = 0;
-int roadX = 0;
+int groundX = 0;
 
 Obstacle obstacles[5] = {
   { 0, 0, ObstacleType::Pterodactyl1, false },
@@ -72,12 +72,12 @@ Obstacle obstacles[5] = {
   { 0, 0, ObstacleType::Pterodactyl1, false },
 };
 
-RoadType road[5] = {
-  RoadType::Flat,
-  RoadType::Flat,
-  RoadType::Hole,
-  RoadType::Flat,
-  RoadType::Flat,
+GroundType ground[5] = {
+  GroundType::Flat,
+  GroundType::Flat,
+  GroundType::Hole,
+  GroundType::Flat,
+  GroundType::Flat,
 };
 
 Dinosaur steve = {0, GROUND_LEVEL, Standing, false, false};
@@ -696,9 +696,9 @@ void launchObstacle(byte obstacleNumber) {
  */
 void drawGround() {
 
-  if (roadX == 32) {
+  if (groundX == 32) {
       
-    roadX = 0;
+    groundX = 0;
 
 
     // Randomly select a new road type ..
@@ -708,15 +708,15 @@ void drawGround() {
     switch (type) {
 
       case 0 ... 5:
-        type = RoadType::Flat;
+        type = GroundType::Flat;
         break;
 
       case 6:
-        type = RoadType::Bump;
+        type = GroundType::Bump;
         break;
 
       case 7:
-        type = RoadType::Hole;
+        type = GroundType::Hole;
         break;
   
     }
@@ -724,33 +724,33 @@ void drawGround() {
 
     // Shuffle the road elements along and assign the randomly selected type to the last element ..
 
-    road[0] = road[1];
-    road[1] = road[2];
-    road[2] = road[3];
-    road[3] = road[4];
-    road[4] = (RoadType)type;
+    ground[0] = ground[1];
+    ground[1] = ground[2];
+    ground[2] = ground[3];
+    ground[3] = ground[4];
+    ground[4] = (GroundType)type;
 
   }
 
-  roadX++;
+  groundX++;
 
 
   // Render the road.  
   
   for (byte i = 0; i < 5; i++) {
   
-    switch (road[i]) {
+    switch (ground[i]) {
       
-      case RoadType::Flat:
-        Sprites::drawOverwrite((i * 32) - roadX, GROUND_LEVEL, ground_flat, frame);   
+      case GroundType::Flat:
+        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
         break;
         
-      case RoadType::Bump:
-        Sprites::drawOverwrite((i * 32) - roadX, GROUND_LEVEL, ground_bump, frame);   
+      case GroundType::Bump:
+        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
         break;
         
-      case RoadType::Hole:
-        Sprites::drawOverwrite((i * 32) - roadX, GROUND_LEVEL, ground_hole, frame);   
+      case GroundType::Hole:
+        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
         break;
         
     }
