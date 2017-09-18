@@ -1,16 +1,18 @@
 #include <Arduboy2.h>
-#include <EEPROM.h>
+//#include <EEPROM.h>
 #include "EEPROMUtils.h"
 #include "Images.h"
 
 #define NUMBER_OF_OBSTACLES         5     
-#define GROUND_LEVEL                32
+#define GROUND_LEVEL                48
+#define STEVE_GROUND_LEVEL          55
+#define CACTUS_GROUND_LEVEL         GROUND_LEVEL + 3
 #define JUMP_TOP_HEIGHT             10
 #define SCORE_START_CACTUS          300
 #define PTERODACTYL_UPPER_LIMIT     8
 #define PTERODACTYL_LOWER_LIMIT     24
-#define OBSTACLE_LAUNCH_DELAY_MIN   125
-#define OBSTACLE_LAUNCH_DELAY_MAX   300
+#define OBSTACLE_LAUNCH_DELAY_MIN   90
+#define OBSTACLE_LAUNCH_DELAY_MAX   200
 
 enum GameStatus {
   Introduction,
@@ -45,16 +47,16 @@ enum GroundType {
 };
 
 struct Dinosaur {
-  char x;
-  char y;
+  int x;
+  int y;
   Stance stance;
   byte jumping;
   byte goingUp;
 };
 
 struct Obstacle {
-  char x;
-  char y;
+  int x;
+  int y;
   ObstacleType type;
   bool enabled;
   
@@ -80,7 +82,7 @@ GroundType ground[5] = {
   GroundType::Flat,
 };
 
-Dinosaur steve = {0, GROUND_LEVEL, Standing, false, false};
+Dinosaur steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
 
 unsigned int score = 0;
 unsigned int highScore = 0;
@@ -96,8 +98,8 @@ GameStatus gameStatus = Introduction;
 void setup() {
 
   initEEPROM();
-  arduboy.begin();
-  arduboy.setFrameRate(60);
+  arduboy.boot();
+  arduboy.setFrameRate(75);
 
 }
 
@@ -111,6 +113,7 @@ void loop() {
   // Pause here until it's time for the next frame ..
   
   if (!(arduboy.nextFrame())) return;
+  arduboy.pollButtons();
 
   switch (gameStatus) {
 
@@ -142,13 +145,14 @@ void initialiseGame() {
   }
 
   score = 0;
-  steve.x = 0;
-  steve.y = GROUND_LEVEL;
+  steve.x = 2;
+  steve.y = STEVE_GROUND_LEVEL;
   steve.jumping = false;
   steve.stance = Stance::Standing;
 
 }
 
+int r = 32;
 
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Display the introduction ..
@@ -156,24 +160,23 @@ void initialiseGame() {
  */
 void introduction() {
 
-  highScore = EEPROMReadInt(EEPROM_SCORE);
+//  highScore = EEPROMReadInt(EEPROM_SCORE);
   arduboy.clear();
 
   initialiseGame();
 
-  arduboy.setCursor(44, 10);
+  arduboy.setCursor(17, 12);
   arduboy.print(F("Press A to begin"));
-  arduboy.drawLine(20, 107, 7, WHITE);
-  arduboy.drawLine(20, 107, 19, WHITE);
 
-  drawGround();
+  drawGround(false);
   drawSteve();
   drawScoreboard(false);
   arduboy.display();
     
-  if (arduboy.justPressed(A_BUTTON)) {
+  if (arduboy.pressed(A_BUTTON)) {
     
     gameStatus = GameStatus::PlayGame; 
+    steve.stance = Stance::Running1;
   
   }
   
@@ -187,20 +190,18 @@ void introduction() {
 void gameOver() {
 
   if (score > highScore) {
-    EEPROMWriteInt(EEPROM_SCORE, score);
+//    EEPROMWriteInt(EEPROM_SCORE, score);
     highScore = score;
   }
 
   arduboy.clear();
 
-  arduboy.setCursor(44, 10);
+  arduboy.setCursor(40, 12);
   arduboy.print(F("Game Over"));
-  arduboy.drawLine(20, 107, 7, WHITE);
-  arduboy.drawLine(20, 107, 19, WHITE);
   
-  drawGround();
-  drawSteve();
   drawObstacles();
+  drawGround(false);
+  drawSteve();
   drawScoreboard(true);
 
 
@@ -231,12 +232,12 @@ void playGame() {
 
   // The player can only control Steve if he is running or ducking on the ground ..
 
-  if (steve.y == GROUND_LEVEL) {
+  if (steve.y == STEVE_GROUND_LEVEL) {
 
     if (arduboy.justPressed(A_BUTTON))                          { steve.jumping = true; steve.goingUp = true; }
-    if (arduboy.justPressed(B_BUTTON))                          { steve.stance = Stance::Ducking1; }
-    if (arduboy.justPressed(LEFT_BUTTON) && steve.x > 0)        { steve.x--; }
-    if (arduboy.justPressed(RIGHT_BUTTON) && steve.x < 32)      { steve.x++; }
+    if (arduboy.justPressed(B_BUTTON))                          { if (steve.stance != Stance::Ducking2) { steve.stance = Stance::Ducking1; }; } 
+    if (arduboy.pressed(LEFT_BUTTON) && steve.x > 0)            { steve.x--; }
+    if (arduboy.pressed(RIGHT_BUTTON) && steve.x < 100)         { steve.x++; }
 
 
     // If the player has not pressed the B button (or continued to hold it down) 
@@ -256,10 +257,10 @@ void playGame() {
   if (obstacleLaunchCountdown == 0) {
 
     for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
-      
-      Obstacle thisObstacle = obstacles[i];
 
-      if (!thisObstacle.enabled) { 
+      if (!obstacles[i].enabled) { 
+        arduboy.setCursor(64, 0);
+        arduboy.print("lau");
         launchObstacle(i); 
         break;
       }
@@ -275,10 +276,14 @@ void playGame() {
 
   if (collision()) {
 
+    steve.jumping = false;
+    steve.goingUp = true;
+    
     if (steve.stance <= Stance::Running2) {
       steve.stance = Stance::Dead1;
     }
     else {
+      steve.y = STEVE_GROUND_LEVEL;
       steve.stance = Stance::Dead2;
     }
     gameStatus = GameStatus::GameOver;
@@ -292,10 +297,11 @@ void playGame() {
     updateSteve();
     updateObstacles();
   
-    drawGround();
-    drawSteve();
     drawObstacles();
+    drawGround(true);
+    drawSteve();
     drawScoreboard(true);
+    score++;
 
     arduboy.display();
     
@@ -312,9 +318,7 @@ bool collision () {
     
   for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
 
-    Obstacle thisObstacle = obstacles[i];
-
-    if (thisObstacle.enabled == true) {
+    if (obstacles[i].enabled == true) {
 
       if (arduboy.collide(getSteveRect(), getObstacleRect(i))) {
         
@@ -359,7 +363,7 @@ void updateSteve() {
       // Steve is returning to earth, if he hits the ground then he is not jumping anymore ..
 
       steve.y++;
-      if (steve.y == GROUND_LEVEL) {
+      if (steve.y == STEVE_GROUND_LEVEL) {
         steve.jumping = false;
       }
 
@@ -381,11 +385,11 @@ void updateSteve() {
       break;
     
     case Stance::Ducking1:
-      steve.stance = Stance::Ducking1;
+      steve.stance = Stance::Ducking2;
       break;
     
     case Stance::Ducking2:
-      steve.stance = Stance::Ducking2;
+      steve.stance = Stance::Ducking1;
       break;
     
     case Stance::Dead1:
@@ -478,69 +482,65 @@ Rect getSteveRect() {
 void updateObstacles() {
 
   for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
-
-    Obstacle thisObstacle = obstacles[i];
     
-    if (thisObstacle.enabled == true) {
-
-      switch (thisObstacle.type) {
+    if (obstacles[i].enabled == true) {
+      
+      switch (obstacles[i].type) {
 
         case ObstacleType::Pterodactyl1:
 
-          thisObstacle.type = Pterodactyl2;
-          thisObstacle.x--;
+          if (arduboy.everyXFrames(2)) {
 
-          if (thisObstacle.x < -getImageWidth(pterodactyl_1)) {
-            thisObstacle.enabled = false; 
+            obstacles[i].type = Pterodactyl2;
+            obstacles[i].x--;
+
+            if (obstacles[i].x < -getImageWidth(pterodactyl_1)) {
+              obstacles[i].enabled = false; 
+            }
+
           }
-
           break;
 
         case ObstacleType::Pterodactyl2:
 
-          thisObstacle.type = Pterodactyl1;
-          thisObstacle.x--;
+          if (arduboy.everyXFrames(2)) {
+            
+            obstacles[i].type = Pterodactyl1;
+            obstacles[i].x--;
 
-          if (thisObstacle.x < -getImageWidth(pterodactyl_2)) {
-            thisObstacle.enabled = false; 
+            if (obstacles[i].x < -getImageWidth(pterodactyl_2)) {
+              obstacles[i].enabled = false; 
+            }
+
           }
 
           break;
 
         case ObstacleType::SingleCactus:
-        
-          if (arduboy.everyXFrames(2)) {
 
-            thisObstacle.x--;
-            if (thisObstacle.x < -getImageWidth(cactus_1)) {
-              thisObstacle.enabled = false; 
-            }
-
+          obstacles[i].x--;
+          if (obstacles[i].x < -getImageWidth(cactus_1)) {
+            obstacles[i].enabled = false; 
           }
+  
           break;
 
         case ObstacleType::DoubleCactus:
-            
-          if (arduboy.everyXFrames(2)) {
 
-            thisObstacle.x--;
-            if (thisObstacle.x < -getImageWidth(cactus_2)) {
-              thisObstacle.enabled = false; 
-            }
-
+          obstacles[i].x--;
+          if (obstacles[i].x < -getImageWidth(cactus_2)) {
+            obstacles[i].enabled = false; 
           }
+
           break;
 
         case ObstacleType::TripleCactus:
 
-          if (arduboy.everyXFrames(2)) {
-
-            thisObstacle.x--;
-            if (thisObstacle.x < -getImageWidth(cactus_3)) {
-              thisObstacle.enabled = false; 
-            }
-
+          obstacles[i].x--;
+          if (obstacles[i].x < -getImageWidth(cactus_3)) {
+            obstacles[i].enabled = false; 
           }
+
           break;
 
       }
@@ -559,31 +559,29 @@ void updateObstacles() {
 void drawObstacles() {
 
   for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
-
-    Obstacle thisObstacle = obstacles[i];
     
-    if (thisObstacle.enabled == true) {
+    if (obstacles[i].enabled == true) {
 
-      switch (thisObstacle.type) {
+      switch (obstacles[i].type) {
 
         case ObstacleType::Pterodactyl1:
-          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, pterodactyl_1, frame);
+          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y, pterodactyl_1, frame);
           break;
 
         case ObstacleType::Pterodactyl2:
-          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, pterodactyl_2, frame);
+          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y, pterodactyl_2, frame);
           break;
 
         case ObstacleType::SingleCactus:
-          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_1, frame);
+          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_1), cactus_1, frame);
           break;
 
         case ObstacleType::DoubleCactus:
-          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_2, frame);
+          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_2), cactus_2, frame);
           break;
 
         case ObstacleType::TripleCactus:
-          Sprites::drawOverwrite(thisObstacle.x, thisObstacle.y, cactus_3, frame);
+          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_3), cactus_3, frame);
           break;
 
       }
@@ -610,13 +608,13 @@ Rect getObstacleRect(byte index) {
       return Rect { thisObstacle.x, thisObstacle.y, getImageWidth(pterodactyl_1), getImageHeight(pterodactyl_1) };
 
     case ObstacleType::SingleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y, getImageWidth(cactus_1), getImageHeight(cactus_1) };
+      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_1), getImageWidth(cactus_1), getImageHeight(cactus_1) };
 
     case ObstacleType::DoubleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y, getImageWidth(cactus_2), getImageHeight(cactus_2) };
+      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_2), getImageWidth(cactus_2), getImageHeight(cactus_2) };
 
     case ObstacleType::TripleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y, getImageWidth(cactus_3), getImageHeight(cactus_3) };
+      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_3), getImageWidth(cactus_3), getImageHeight(cactus_3) };
 
   }
 
@@ -631,8 +629,9 @@ void drawScoreboard(bool displayCurrentScore) {
 
   if (displayCurrentScore) { 
     
-    arduboy.setCursor(0, 0);
+    arduboy.setCursor(1, 0);
     arduboy.print(F("Score: "));
+    arduboy.setCursor(39, 0);
     if (score < 1000) arduboy.print("0");
     if (score < 100) arduboy.print("0");
     if (score < 10)  arduboy.print("0");
@@ -640,14 +639,15 @@ void drawScoreboard(bool displayCurrentScore) {
        
   }
   
-  arduboy.setCursor(44, 0);
-  arduboy.print(F("High Score: "));
+  arduboy.setCursor(72, 0);
+  arduboy.print(F("High: "));
+  arduboy.setCursor(104, 0);
   if (highScore < 1000) arduboy.print("0");
   if (highScore < 100) arduboy.print("0");
   if (highScore < 10)  arduboy.print("0");
   arduboy.print(highScore);
   
-  arduboy.drawLine(0, WIDTH, 11, WHITE);
+  arduboy.drawLine(0, 9, WIDTH, 9, WHITE);
 
 }
 
@@ -667,6 +667,7 @@ void launchObstacle(byte obstacleNumber) {
     type = (ObstacleType)random(ObstacleType::SingleCactus, ObstacleType::Count_AllObstacles);
   }
  
+
   switch (type) {
 
     case ObstacleType::SingleCactus:
@@ -675,7 +676,7 @@ void launchObstacle(byte obstacleNumber) {
       obstacles[obstacleNumber].type = type;
       obstacles[obstacleNumber].enabled = true;
       obstacles[obstacleNumber].x = WIDTH - 1;
-      obstacles[obstacleNumber].y = GROUND_LEVEL;
+      obstacles[obstacleNumber].y = CACTUS_GROUND_LEVEL;
       break;
 
     case ObstacleType::Pterodactyl1:  
@@ -694,45 +695,49 @@ void launchObstacle(byte obstacleNumber) {
  *  Render the ground.
  * -----------------------------------------------------------------------------------------------------------------------------
  */
-void drawGround() {
+void drawGround(bool moveGround) {
 
-  if (groundX == 32) {
-      
-    groundX = 0;
+  if (moveGround) {
+
+    if (groundX == 32) {
+        
+      groundX = 0;
 
 
-    // Randomly select a new road type ..
+      // Randomly select a new road type ..
 
-    byte type = random(0, 8);
+      byte type = random(0, 6);
 
-    switch (type) {
+      switch (type) {
 
-      case 0 ... 5:
-        type = GroundType::Flat;
-        break;
+        case 0 ... 3:
+          type = GroundType::Flat;
+          break;
 
-      case 6:
-        type = GroundType::Bump;
-        break;
+        case 4:
+          type = GroundType::Bump;
+          break;
 
-      case 7:
-        type = GroundType::Hole;
-        break;
-  
+        case 5:
+          type = GroundType::Hole;
+          break;
+    
+      }
+
+
+      // Shuffle the road elements along and assign the randomly selected type to the last element ..
+
+      ground[0] = ground[1];
+      ground[1] = ground[2];
+      ground[2] = ground[3];
+      ground[3] = ground[4];
+      ground[4] = (GroundType)type;
+
     }
 
-
-    // Shuffle the road elements along and assign the randomly selected type to the last element ..
-
-    ground[0] = ground[1];
-    ground[1] = ground[2];
-    ground[2] = ground[3];
-    ground[3] = ground[4];
-    ground[4] = (GroundType)type;
+    groundX++;
 
   }
-
-  groundX++;
 
 
   // Render the road.  
@@ -742,15 +747,15 @@ void drawGround() {
     switch (ground[i]) {
       
       case GroundType::Flat:
-        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
+        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
         break;
         
       case GroundType::Bump:
-        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
+        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
         break;
         
       case GroundType::Hole:
-        Sprites::drawOverwrite((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
+        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
         break;
         
     }
