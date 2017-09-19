@@ -8,7 +8,7 @@
 #define STEVE_GROUND_LEVEL          GROUND_LEVEL + 7
 #define CACTUS_GROUND_LEVEL         GROUND_LEVEL + 3
 #define JUMP_TOP_HEIGHT             10
-#define SCORE_START_CACTUS          300
+#define SCORE_START_PTERODACTYL     300
 #define PTERODACTYL_UPPER_LIMIT     27
 #define PTERODACTYL_LOWER_LIMIT     48
 #define OBSTACLE_LAUNCH_DELAY_MIN   90
@@ -52,8 +52,8 @@ struct Steve {
   Stance stance;
   byte jumping;
   byte goingUp;
-  byte *image;
-  byte *mask;
+  const byte *image;
+  const byte *mask;
 };
 
 struct Obstacle {
@@ -61,7 +61,7 @@ struct Obstacle {
   int y;
   ObstacleType type;
   bool enabled;
-  byte *image;
+  const byte *image;
 };
 
 Arduboy2 arduboy;
@@ -155,7 +155,6 @@ void initialiseGame() {
 
 }
 
-int r = 32;
 
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Display the introduction ..
@@ -328,12 +327,6 @@ bool collision () {
         return true;
           
       }
-
-//      if (arduboy.collide(getSteveRect(), getObstacleRect(i))) {
-//        
-//        return true;
-//          
-//      }
       
     }
     
@@ -379,38 +372,41 @@ void updateSteve() {
     }
     
   }
+  else {
 
 
-  // Swap the image to simulate running ..
+    // Swap the image to simulate running ..
 
-  if (arduboy.everyXFrames(3)) {
+    if (arduboy.everyXFrames(3)) {
 
-    switch (steve.stance) {
-  
-      case Stance::Running1:
-        steve.stance = Stance::Running2;
-        break;
-      
-      case Stance::Running2:
-        steve.stance = Stance::Running1;
-        break;
-      
-      case Stance::Ducking1:
-        steve.stance = Stance::Ducking2;
-        break;
-      
-      case Stance::Ducking2:
-        steve.stance = Stance::Ducking1;
-        break;
-      
-      case Stance::Dead1:
-        steve.stance = Stance::Dead2;
-        break;
-  
-      default:
-        break;
-      
-     }
+      switch (steve.stance) {
+    
+        case Stance::Running1:
+          steve.stance = Stance::Running2;
+          break;
+        
+        case Stance::Running2:
+          steve.stance = Stance::Running1;
+          break;
+        
+        case Stance::Ducking1:
+          steve.stance = Stance::Ducking2;
+          break;
+        
+        case Stance::Ducking2:
+          steve.stance = Stance::Ducking1;
+          break;
+        
+        case Stance::Dead1:
+          steve.stance = Stance::Dead2;
+          break;
+    
+        default:
+          break;
+        
+      }
+
+    }
 
   }
 
@@ -471,30 +467,6 @@ void drawSteve() {
 
 
 /* -----------------------------------------------------------------------------------------------------------------------------
- *  Return the rectangle that Steve occupies.  This differs depending on whether he is standing or ducking ..
- * -----------------------------------------------------------------------------------------------------------------------------
- * /
-Rect getSteveRect() {
-
-  switch (steve.stance) {
-
-    case Stance::Standing:
-    case Stance::Running1:
-    case Stance::Running2:
-    case Stance::Dead1:
-      return Rect { steve.x, steve.y - getImageHeight(dinosaur_still), getImageWidth(dinosaur_still), getImageHeight(dinosaur_still) };
-
-    case Stance::Ducking1:
-    case Stance::Ducking2:
-    case Stance::Dead2:
-      return Rect { steve.x, steve.y - getImageHeight(dinosaur_ducking_2), getImageWidth(dinosaur_ducking_2), getImageHeight(dinosaur_ducking_2) };
-             
-  }
-  
-}
-*/
-
-/* -----------------------------------------------------------------------------------------------------------------------------
  *  Update the position of any visible obstacles ..
  *
  *  If the obstacle has completely off screen, then disable it.  Pterodactyls move 1 pixel per update whereas cacti move one
@@ -512,64 +484,34 @@ void updateObstacles() {
         case ObstacleType::Pterodactyl1:
 
           if (arduboy.everyXFrames(2)) {
-
             obstacles[i].type = Pterodactyl2;
-
           }
 
           obstacles[i].x--;
-
-          if (obstacles[i].x < -getImageWidth(pterodactyl_1)) {
-            obstacles[i].enabled = false; 
-          }
-
           break;
 
         case ObstacleType::Pterodactyl2:
 
           if (arduboy.everyXFrames(2)) {
-            
             obstacles[i].type = Pterodactyl1;
-
           }
           
           obstacles[i].x--;
-
-          if (obstacles[i].x < -getImageWidth(pterodactyl_2)) {
-            obstacles[i].enabled = false; 
-          }
-
           break;
 
         case ObstacleType::SingleCactus:
-
-          obstacles[i].x--;
-          if (obstacles[i].x < -getImageWidth(cactus_1)) {
-            obstacles[i].enabled = false; 
-          }
-  
-          break;
-
         case ObstacleType::DoubleCactus:
-
-          obstacles[i].x--;
-          if (obstacles[i].x < -getImageWidth(cactus_2)) {
-            obstacles[i].enabled = false; 
-          }
-
-          break;
-
         case ObstacleType::TripleCactus:
 
           obstacles[i].x--;
-          if (obstacles[i].x < -getImageWidth(cactus_3)) {
-            obstacles[i].enabled = false; 
-          }
-
           break;
 
       }
       
+      if (obstacles[i].x < -getImageWidth(obstacles[i].image)) {
+        obstacles[i].enabled = false; 
+      }
+
     }
     
   }
@@ -621,34 +563,6 @@ void drawObstacles() {
 
 
 /* -----------------------------------------------------------------------------------------------------------------------------
- *  Return the rectangle that an obstacle occupies.  Each obstacle has a different size ..
- * -----------------------------------------------------------------------------------------------------------------------------
- * / 
-Rect getObstacleRect(byte index) {
-
-  Obstacle thisObstacle = obstacles[index];
-    
-  switch (thisObstacle.type) {
-
-    case ObstacleType::Pterodactyl1:
-    case ObstacleType::Pterodactyl2:
-      return Rect { thisObstacle.x, thisObstacle.y, getImageWidth(pterodactyl_1), getImageHeight(pterodactyl_1) };
-
-    case ObstacleType::SingleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_1), getImageWidth(cactus_1), getImageHeight(cactus_1) };
-
-    case ObstacleType::DoubleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_2), getImageWidth(cactus_2), getImageHeight(cactus_2) };
-
-    case ObstacleType::TripleCactus:
-      return Rect { thisObstacle.x, thisObstacle.y - getImageHeight(cactus_3), getImageWidth(cactus_3), getImageHeight(cactus_3) };
-
-  }
-
-}
-*/
-
-/* -----------------------------------------------------------------------------------------------------------------------------
  *  Render the scoreboard at the top of the screen ..
  * -----------------------------------------------------------------------------------------------------------------------------
  */
@@ -689,7 +603,7 @@ void launchObstacle(byte obstacleNumber) {
 
   ObstacleType type;
 
-  if (score < SCORE_START_CACTUS) {
+  if (score < SCORE_START_PTERODACTYL) {
     type = (ObstacleType)random(ObstacleType::SingleCactus, ObstacleType::Count_CactusOnly);
   }
   else {
