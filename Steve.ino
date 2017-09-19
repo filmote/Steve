@@ -374,32 +374,36 @@ void updateSteve() {
 
   // Swap the image to simulate running ..
 
-  switch (steve.stance) {
+  if (arduboy.everyXFrames(2)) {
 
-    case Stance::Running1:
-      steve.stance = Stance::Running2;
-      break;
-    
-    case Stance::Running2:
-      steve.stance = Stance::Running1;
-      break;
-    
-    case Stance::Ducking1:
-      steve.stance = Stance::Ducking2;
-      break;
-    
-    case Stance::Ducking2:
-      steve.stance = Stance::Ducking1;
-      break;
-    
-    case Stance::Dead1:
-      steve.stance = Stance::Dead2;
-      break;
+    switch (steve.stance) {
+  
+      case Stance::Running1:
+        steve.stance = Stance::Running2;
+        break;
+      
+      case Stance::Running2:
+        steve.stance = Stance::Running1;
+        break;
+      
+      case Stance::Ducking1:
+        steve.stance = Stance::Ducking2;
+        break;
+      
+      case Stance::Ducking2:
+        steve.stance = Stance::Ducking1;
+        break;
+      
+      case Stance::Dead1:
+        steve.stance = Stance::Dead2;
+        break;
+  
+      default:
+        break;
+      
+     }
 
-    default:
-      break;
-    
-   }
+  }
 
 }
 
@@ -492,13 +496,15 @@ void updateObstacles() {
           if (arduboy.everyXFrames(2)) {
 
             obstacles[i].type = Pterodactyl2;
-            obstacles[i].x--;
-
-            if (obstacles[i].x < -getImageWidth(pterodactyl_1)) {
-              obstacles[i].enabled = false; 
-            }
 
           }
+
+          obstacles[i].x--;
+
+          if (obstacles[i].x < -getImageWidth(pterodactyl_1)) {
+            obstacles[i].enabled = false; 
+          }
+
           break;
 
         case ObstacleType::Pterodactyl2:
@@ -506,12 +512,13 @@ void updateObstacles() {
           if (arduboy.everyXFrames(2)) {
             
             obstacles[i].type = Pterodactyl1;
-            obstacles[i].x--;
 
-            if (obstacles[i].x < -getImageWidth(pterodactyl_2)) {
-              obstacles[i].enabled = false; 
-            }
+          }
+          
+          obstacles[i].x--;
 
+          if (obstacles[i].x < -getImageWidth(pterodactyl_2)) {
+            obstacles[i].enabled = false; 
           }
 
           break;
