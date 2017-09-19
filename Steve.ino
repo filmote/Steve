@@ -4,13 +4,13 @@
 #include "Images.h"
 
 #define NUMBER_OF_OBSTACLES         5     
-#define GROUND_LEVEL                48
-#define STEVE_GROUND_LEVEL          55
+#define GROUND_LEVEL                55
+#define STEVE_GROUND_LEVEL          GROUND_LEVEL + 7
 #define CACTUS_GROUND_LEVEL         GROUND_LEVEL + 3
 #define JUMP_TOP_HEIGHT             10
 #define SCORE_START_CACTUS          300
-#define PTERODACTYL_UPPER_LIMIT     8
-#define PTERODACTYL_LOWER_LIMIT     24
+#define PTERODACTYL_UPPER_LIMIT     27
+#define PTERODACTYL_LOWER_LIMIT     48
 #define OBSTACLE_LAUNCH_DELAY_MIN   90
 #define OBSTACLE_LAUNCH_DELAY_MAX   200
 
@@ -46,12 +46,14 @@ enum GroundType {
   Hole,
 };
 
-struct Dinosaur {
+struct Steve {
   int x;
   int y;
   Stance stance;
   byte jumping;
   byte goingUp;
+  byte *image;
+  byte *mask;
 };
 
 struct Obstacle {
@@ -59,7 +61,7 @@ struct Obstacle {
   int y;
   ObstacleType type;
   bool enabled;
-  
+  byte *image;
 };
 
 Arduboy2 arduboy;
@@ -67,11 +69,11 @@ int frame = 0;
 int groundX = 0;
 
 Obstacle obstacles[5] = {
-  { 0, 0, ObstacleType::Pterodactyl1, false },
-  { 0, 0, ObstacleType::Pterodactyl1, false },
-  { 0, 0, ObstacleType::Pterodactyl1, false },
-  { 0, 0, ObstacleType::Pterodactyl1, false },
-  { 0, 0, ObstacleType::Pterodactyl1, false },
+  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
 };
 
 GroundType ground[5] = {
@@ -82,7 +84,7 @@ GroundType ground[5] = {
   GroundType::Flat,
 };
 
-Dinosaur steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
+Steve steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
 
 unsigned int score = 0;
 unsigned int highScore = 0;
@@ -113,6 +115,7 @@ void loop() {
   // Pause here until it's time for the next frame ..
   
   if (!(arduboy.nextFrame())) return;
+  
   arduboy.pollButtons();
 
   switch (gameStatus) {
@@ -195,14 +198,14 @@ void gameOver() {
   }
 
   arduboy.clear();
-
-  arduboy.setCursor(40, 12);
-  arduboy.print(F("Game Over"));
   
   drawObstacles();
   drawGround(false);
   drawSteve();
   drawScoreboard(true);
+
+  arduboy.setCursor(40, 12);
+  arduboy.print(F("Game Over"));
 
 
   // Update Steve's image.  If he is dead and still standing, this will change him to lying on the ground ..
@@ -214,8 +217,10 @@ void gameOver() {
   if (arduboy.justPressed(A_BUTTON)) { 
   
     initialiseGame();
+
     gameStatus = GameStatus::PlayGame; 
-  
+    steve.stance = Stance::Running1;
+
   }
  
 }
@@ -259,8 +264,6 @@ void playGame() {
     for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
 
       if (!obstacles[i].enabled) { 
-        arduboy.setCursor(64, 0);
-        arduboy.print("lau");
         launchObstacle(i); 
         break;
       }
@@ -301,7 +304,7 @@ void playGame() {
     drawGround(true);
     drawSteve();
     drawScoreboard(true);
-    score++;
+    if (arduboy.everyXFrames(3)) { score++; }
 
     arduboy.display();
     
@@ -320,11 +323,17 @@ bool collision () {
 
     if (obstacles[i].enabled == true) {
 
-      if (arduboy.collide(getSteveRect(), getObstacleRect(i))) {
-        
+      if (collide(steve.x, steve.y - getImageHeight(steve.image), steve.image, obstacles[i].x, obstacles[i].y - getImageHeight(obstacles[i].image), obstacles[i].image)) {
+
         return true;
           
       }
+
+//      if (arduboy.collide(getSteveRect(), getObstacleRect(i))) {
+//        
+//        return true;
+//          
+//      }
       
     }
     
@@ -374,7 +383,7 @@ void updateSteve() {
 
   // Swap the image to simulate running ..
 
-  if (arduboy.everyXFrames(2)) {
+  if (arduboy.everyXFrames(3)) {
 
     switch (steve.stance) {
   
@@ -420,34 +429,43 @@ void drawSteve() {
   switch (steve.stance) {
 
     case Stance::Standing:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_still), dinosaur_still, dinosaur_still_mask, frame, frame);
+      steve.image = dinosaur_still;
+      steve.mask = dinosaur_still_mask;
       break;
 
     case Stance::Running1:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_running_1), dinosaur_running_1, dinosaur_running_1_mask, frame, frame);
+      steve.image = dinosaur_running_1;
+      steve.mask = dinosaur_running_1_mask;
       break;
 
     case Stance::Running2:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_running_2), dinosaur_running_2, dinosaur_running_2_mask, frame, frame);
+      steve.image = dinosaur_running_2;
+      steve.mask = dinosaur_running_2_mask;
       break;
 
     case Stance::Ducking1:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_ducking_1), dinosaur_ducking_1, dinosaur_ducking_1_mask, frame, frame);
+      steve.image = dinosaur_ducking_1;
+      steve.mask = dinosaur_ducking_1_mask;
       break;
 
     case Stance::Ducking2:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_ducking_2), dinosaur_ducking_2, dinosaur_ducking_2_mask, frame, frame);
+      steve.image = dinosaur_ducking_2;
+      steve.mask = dinosaur_ducking_2_mask;
       break;
 
     case Stance::Dead1:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_1), dinosaur_dead_1, dinosaur_still_mask, frame, frame);
+      steve.image = dinosaur_dead_1;
+      steve.mask = dinosaur_still_mask;
       break;
 
     case Stance::Dead2:
-      Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(dinosaur_dead_2), dinosaur_dead_2, dinosaur_dead_2_mask, frame, frame);
+      steve.image = dinosaur_dead_2;
+      steve.mask = dinosaur_dead_2_mask;
       break;
        
   }
+
+  Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(steve.image), steve.image, steve.mask, frame, frame);
   
 }
 
@@ -455,7 +473,7 @@ void drawSteve() {
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Return the rectangle that Steve occupies.  This differs depending on whether he is standing or ducking ..
  * -----------------------------------------------------------------------------------------------------------------------------
- */
+ * /
 Rect getSteveRect() {
 
   switch (steve.stance) {
@@ -474,7 +492,7 @@ Rect getSteveRect() {
   }
   
 }
-
+*/
 
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Update the position of any visible obstacles ..
@@ -572,27 +590,29 @@ void drawObstacles() {
       switch (obstacles[i].type) {
 
         case ObstacleType::Pterodactyl1:
-          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y, pterodactyl_1, frame);
+          obstacles[i].image = pterodactyl_1;
           break;
 
         case ObstacleType::Pterodactyl2:
-          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y, pterodactyl_2, frame);
+          obstacles[i].image = pterodactyl_2;
           break;
 
         case ObstacleType::SingleCactus:
-          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_1), cactus_1, frame);
+          obstacles[i].image = cactus_1;
           break;
 
         case ObstacleType::DoubleCactus:
-          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_2), cactus_2, frame);
+          obstacles[i].image = cactus_2;
           break;
 
         case ObstacleType::TripleCactus:
-          Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(cactus_3), cactus_3, frame);
+          obstacles[i].image = cactus_3;
           break;
 
       }
-      
+
+      Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(obstacles[i].image), obstacles[i].image, frame);      
+
     }
     
   }
@@ -603,7 +623,7 @@ void drawObstacles() {
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Return the rectangle that an obstacle occupies.  Each obstacle has a different size ..
  * -----------------------------------------------------------------------------------------------------------------------------
- */
+ * / 
 Rect getObstacleRect(byte index) {
 
   Obstacle thisObstacle = obstacles[index];
@@ -626,13 +646,15 @@ Rect getObstacleRect(byte index) {
   }
 
 }
-
+*/
 
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Render the scoreboard at the top of the screen ..
  * -----------------------------------------------------------------------------------------------------------------------------
  */
 void drawScoreboard(bool displayCurrentScore) {
+
+  arduboy.fillRect(0, 0, WIDTH, 10, BLACK);
 
   if (displayCurrentScore) { 
     
@@ -674,7 +696,6 @@ void launchObstacle(byte obstacleNumber) {
     type = (ObstacleType)random(ObstacleType::SingleCactus, ObstacleType::Count_AllObstacles);
   }
  
-
   switch (type) {
 
     case ObstacleType::SingleCactus:
