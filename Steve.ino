@@ -51,7 +51,7 @@ struct Steve {
   int y;
   Stance stance;
   byte jumping;
-  byte goingUp;
+  byte jumpIndex;
   const byte *image;
   const byte *mask;
 };
@@ -85,6 +85,7 @@ GroundType ground[5] = {
 };
 
 Steve steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
+unsigned char jumpCoords[] = {45, 41, 37, 33, 30, 27, 25, 23, 21, 20, 19, 18, 18, 17, 17, 17, 16, 16, 16, 15, 15, 15, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18, 19, 20, 21, 23, 25, 27, 30, 33, 37, 41, 45 }; 
 
 unsigned int score = 0;
 unsigned int highScore = 0;
@@ -238,7 +239,7 @@ void playGame() {
 
   if (steve.y == STEVE_GROUND_LEVEL) {
 
-    if (arduboy.justPressed(A_BUTTON))                          { steve.jumping = true; steve.goingUp = true; }
+    if (arduboy.justPressed(A_BUTTON))                          { steve.jumping = true; steve.jumpIndex = 0; }
     if (arduboy.justPressed(B_BUTTON))                          { if (steve.stance != Stance::Ducking2) { steve.stance = Stance::Ducking1; }; } 
     if (arduboy.pressed(LEFT_BUTTON) && steve.x > 0)            { steve.x--; }
     if (arduboy.pressed(RIGHT_BUTTON) && steve.x < 100)         { steve.x++; }
@@ -279,7 +280,7 @@ void playGame() {
   if (collision()) {
 
     steve.jumping = false;
-    steve.goingUp = true;
+    steve.jumpIndex = 0;
     
     if (steve.stance <= Stance::Running2) {
       steve.stance = Stance::Dead1;
@@ -348,26 +349,13 @@ void updateSteve() {
 
   if (steve.jumping) {
 
-    if (steve.goingUp) {
-
-
-      // Steve is on his way up.  If he has jumped has high as he can go, then he must come down ..
-
-      steve.y--;
-      if (steve.y == JUMP_TOP_HEIGHT) {
-        steve.goingUp = false;
-      }
+    steve.y = jumpCoords[steve.jumpIndex];
+    steve.jumpIndex++;
     
-    }
-    else {
-    
+    if (steve.jumpIndex = sizeof(jumpCoords)) {
 
-      // Steve is returning to earth, if he hits the ground then he is not jumping anymore ..
-
-      steve.y++;
-      if (steve.y == STEVE_GROUND_LEVEL) {
-        steve.jumping = false;
-      }
+      steve.jumping = false;
+      steve.jumpIndex = 0;
 
     }
     
