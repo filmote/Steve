@@ -3,7 +3,7 @@
 #include "EEPROMUtils.h"
 #include "Images.h"
 
-#define NUMBER_OF_OBSTACLES         5     
+#define NUMBER_OF_OBSTACLES         3     
 #define GROUND_LEVEL                55
 #define STEVE_GROUND_LEVEL          GROUND_LEVEL + 7
 #define CACTUS_GROUND_LEVEL         GROUND_LEVEL + 3
@@ -68,9 +68,7 @@ Arduboy2 arduboy;
 int frame = 0;
 int groundX = 0;
 
-Obstacle obstacles[5] = {
-  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
-  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+Obstacle obstacles[NUMBER_OF_OBSTACLES] = {
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
@@ -102,7 +100,8 @@ void setup() {
   initEEPROM();
   arduboy.boot();
   arduboy.setFrameRate(75);
-
+  arduboy.initRandomSeed();
+  
 }
 
 
@@ -665,25 +664,25 @@ void drawGround(bool moveGround) {
 
 
   // Render the road.  
+    
+    for (byte i = 0; i < 5; i++) {
+    
+      switch (ground[i]) {
+        
+        case GroundType::Flat:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
+          break;
+          
+        case GroundType::Bump:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
+          break;
+          
+        case GroundType::Hole:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
+          break;
+          
+      }
   
-  for (byte i = 0; i < 5; i++) {
-  
-    switch (ground[i]) {
-      
-      case GroundType::Flat:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
-        break;
-        
-      case GroundType::Bump:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
-        break;
-        
-      case GroundType::Hole:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
-        break;
-        
     }
-
-  }
 
 }
