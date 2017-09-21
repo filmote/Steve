@@ -3,7 +3,7 @@
 #include "EEPROMUtils.h"
 #include "Images.h"
 
-#define NUMBER_OF_OBSTACLES         5     
+#define NUMBER_OF_OBSTACLES         3     
 #define GROUND_LEVEL                55
 #define STEVE_GROUND_LEVEL          GROUND_LEVEL + 7
 #define CACTUS_GROUND_LEVEL         GROUND_LEVEL + 3
@@ -68,9 +68,7 @@ Arduboy2 arduboy;
 int frame = 0;
 int groundX = 0;
 
-Obstacle obstacles[5] = {
-  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
-  { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
+Obstacle obstacles[NUMBER_OF_OBSTACLES] = {
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
