@@ -85,8 +85,7 @@ GroundType ground[5] = {
 };
 
 Steve steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
-unsigned char jumpCoords[] = {45, 41, 37, 33, 30, 27, 25, 23, 21, 20, 19, 18, 18, 17, 17, 17, 16, 16, 16, 15, 15, 15, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18, 19, 20, 21, 23, 25, 27, 30, 33, 37, 41, 45 }; 
-
+unsigned char jumpCoords[] = {55, 	52, 	47, 	43, 	40, 	38, 	36, 	34, 	33, 	31, 	30, 	29, 	28, 	27, 	26, 	25, 	24, 	24, 	23, 	23, 	22, 	22, 	21, 	21, 	20, 	20, 	20, 	20, 	19, 	19, 	19, 	19, 	19, 	20, 	20, 	20, 	20, 	21, 	21, 	22, 	22, 	23, 	23, 	24, 	24, 	25, 	26, 	27, 	28, 	29, 	30, 	31, 	33, 	34, 	36, 	38, 	40, 	43, 	47, 	51, 	55, 	 };
 unsigned int score = 0;
 unsigned int highScore = 0;
 unsigned int obstacleLaunchCountdown = OBSTACLE_LAUNCH_DELAY_MIN;
@@ -237,7 +236,7 @@ void playGame() {
 
   // The player can only control Steve if he is running or ducking on the ground ..
 
-  if (steve.y == STEVE_GROUND_LEVEL) {
+  if (!steve.jumping) {
 
     if (arduboy.justPressed(A_BUTTON))                          { steve.jumping = true; steve.jumpIndex = 0; }
     if (arduboy.justPressed(B_BUTTON))                          { if (steve.stance != Stance::Ducking2) { steve.stance = Stance::Ducking1; }; } 
@@ -352,10 +351,11 @@ void updateSteve() {
     steve.y = jumpCoords[steve.jumpIndex];
     steve.jumpIndex++;
     
-    if (steve.jumpIndex = sizeof(jumpCoords)) {
+    if (steve.jumpIndex == sizeof(jumpCoords)) {
 
       steve.jumping = false;
       steve.jumpIndex = 0;
+      steve.y = STEVE_GROUND_LEVEL;
 
     }
     
@@ -589,14 +589,8 @@ void drawScoreboard(bool displayCurrentScore) {
  */
 void launchObstacle(byte obstacleNumber) {
 
-  ObstacleType type;
-
-  if (score < SCORE_START_PTERODACTYL) {
-    type = (ObstacleType)random(ObstacleType::SingleCactus, ObstacleType::Count_CactusOnly);
-  }
-  else {
-    type = (ObstacleType)random(ObstacleType::SingleCactus, ObstacleType::Count_AllObstacles);
-  }
+  ObstacleType randomUpper = (score > 300 ? ObstacleType::Count_AllObstacles : score / 75);
+  ObstacleType type = (ObstacleType)random(ObstacleType::SingleCactus, randomUpper);
  
   switch (type) {
 
