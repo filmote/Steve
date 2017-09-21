@@ -103,7 +103,8 @@ void setup() {
   initEEPROM();
   arduboy.boot();
   arduboy.setFrameRate(75);
-
+  arduboy.initRandomSeed();
+  
 }
 
 
@@ -671,25 +672,25 @@ void drawGround(bool moveGround) {
 
 
   // Render the road.  
+    
+    for (byte i = 0; i < 5; i++) {
+    
+      switch (ground[i]) {
+        
+        case GroundType::Flat:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
+          break;
+          
+        case GroundType::Bump:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
+          break;
+          
+        case GroundType::Hole:
+          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
+          break;
+          
+      }
   
-  for (byte i = 0; i < 5; i++) {
-  
-    switch (ground[i]) {
-      
-      case GroundType::Flat:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
-        break;
-        
-      case GroundType::Bump:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
-        break;
-        
-      case GroundType::Hole:
-        Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
-        break;
-        
     }
-
-  }
 
 }
