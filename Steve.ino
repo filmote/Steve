@@ -83,12 +83,18 @@ GroundType ground[5] = {
 };
 
 Steve steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
-unsigned char jumpCoords[] = {55, 	52, 	47, 	43, 	40, 	38, 	36, 	34, 	33, 	31, 	30, 	29, 	28, 	27, 	26, 	25, 	24, 	24, 	23, 	23, 	22, 	22, 	21, 	21, 	20, 	20, 	20, 	20, 	19, 	19, 	19, 	19, 	19, 	20, 	20, 	20, 	20, 	21, 	21, 	22, 	22, 	23, 	23, 	24, 	24, 	25, 	26, 	27, 	28, 	29, 	30, 	31, 	33, 	34, 	36, 	38, 	40, 	43, 	47, 	51, 	55, 	 };
+
+unsigned char jumpCoords[] = {55, 52, 47, 43, 40, 38, 36, 34, 33, 31, 30, 29, 28, 27, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 20, 20, 19, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 28, 29, 30, 31, 33, 34, 36, 38, 40, 43, 47, 51, 55,  };
 unsigned int score = 0;
 unsigned int highScore = 0;
 unsigned int obstacleLaunchCountdown = OBSTACLE_LAUNCH_DELAY_MIN;
 
 GameStatus gameStatus = Introduction;
+
+const byte *steve_images[] = { dinosaur_still, dinosaur_running_1, dinosaur_running_2, dinosaur_ducking_1, dinosaur_ducking_2, dinosaur_dead_1, dinosaur_dead_2 };
+const byte *steve_masks[] = { dinosaur_still_mask, dinosaur_running_1_mask, dinosaur_running_2_mask, dinosaur_ducking_1_mask, dinosaur_ducking_2_mask, dinosaur_dead_2_mask, dinosaur_dead_2_mask };
+const byte *obstacle_images[] = { cactus_1, cactus_2, cactus_3, pterodactyl_1, pterodactyl_2 };
+const byte *ground_images[] = { ground_flat, ground_bump, ground_hole };
 
 
 /* -----------------------------------------------------------------------------------------------------------------------------
@@ -409,45 +415,8 @@ void updateSteve() {
  */
 void drawSteve() {
 
-  switch (steve.stance) {
-
-    case Stance::Standing:
-      steve.image = dinosaur_still;
-      steve.mask = dinosaur_still_mask;
-      break;
-
-    case Stance::Running1:
-      steve.image = dinosaur_running_1;
-      steve.mask = dinosaur_running_1_mask;
-      break;
-
-    case Stance::Running2:
-      steve.image = dinosaur_running_2;
-      steve.mask = dinosaur_running_2_mask;
-      break;
-
-    case Stance::Ducking1:
-      steve.image = dinosaur_ducking_1;
-      steve.mask = dinosaur_ducking_1_mask;
-      break;
-
-    case Stance::Ducking2:
-      steve.image = dinosaur_ducking_2;
-      steve.mask = dinosaur_ducking_2_mask;
-      break;
-
-    case Stance::Dead1:
-      steve.image = dinosaur_dead_1;
-      steve.mask = dinosaur_still_mask;
-      break;
-
-    case Stance::Dead2:
-      steve.image = dinosaur_dead_2;
-      steve.mask = dinosaur_dead_2_mask;
-      break;
-       
-  }
-
+  steve.image = steve_images[steve.stance];
+  steve.mask = steve_masks[steve.stance];
   Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(steve.image), steve.image, steve.mask, frame, frame);
   
 }
@@ -469,20 +438,17 @@ void updateObstacles() {
       switch (obstacles[i].type) {
 
         case ObstacleType::Pterodactyl1:
-
-          if (arduboy.everyXFrames(2)) {
-            obstacles[i].type = Pterodactyl2;
-          }
-
-          obstacles[i].x--;
-          break;
-
         case ObstacleType::Pterodactyl2:
-
+        
           if (arduboy.everyXFrames(2)) {
-            obstacles[i].type = Pterodactyl1;
+            if (obstacles[i].type == Pterodactyl1) { 
+              obstacles[i].type = Pterodactyl2;
+            }
+            else {
+              obstacles[i].type = Pterodactyl1;
+            }
           }
-          
+
           obstacles[i].x--;
           break;
 
@@ -495,6 +461,9 @@ void updateObstacles() {
 
       }
       
+
+      // Has the obstacle moved out of view ?
+
       if (obstacles[i].x < -getImageWidth(obstacles[i].image)) {
         obstacles[i].enabled = false; 
       }
@@ -516,30 +485,7 @@ void drawObstacles() {
     
     if (obstacles[i].enabled == true) {
 
-      switch (obstacles[i].type) {
-
-        case ObstacleType::Pterodactyl1:
-          obstacles[i].image = pterodactyl_1;
-          break;
-
-        case ObstacleType::Pterodactyl2:
-          obstacles[i].image = pterodactyl_2;
-          break;
-
-        case ObstacleType::SingleCactus:
-          obstacles[i].image = cactus_1;
-          break;
-
-        case ObstacleType::DoubleCactus:
-          obstacles[i].image = cactus_2;
-          break;
-
-        case ObstacleType::TripleCactus:
-          obstacles[i].image = cactus_3;
-          break;
-
-      }
-
+      obstacles[i].image = obstacle_images[obstacles[i].type];
       Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(obstacles[i].image), obstacles[i].image, frame);      
 
     }
@@ -588,27 +534,22 @@ void drawScoreboard(bool displayCurrentScore) {
  */
 void launchObstacle(byte obstacleNumber) {
 
-  ObstacleType randomUpper = (score > 300 ? ObstacleType::Count_AllObstacles : score / 75);
+  ObstacleType randomUpper = (ObstacleType)(score > 300 ? ObstacleType::Count_AllObstacles : score / 75);
   ObstacleType type = (ObstacleType)random(ObstacleType::SingleCactus, randomUpper);
- 
-  switch (type) {
 
-    case ObstacleType::SingleCactus:
-    case ObstacleType::DoubleCactus:
-    case ObstacleType::TripleCactus:
-      obstacles[obstacleNumber].type = type;
-      obstacles[obstacleNumber].enabled = true;
-      obstacles[obstacleNumber].x = WIDTH - 1;
-      obstacles[obstacleNumber].y = CACTUS_GROUND_LEVEL;
-      break;
+  obstacles[obstacleNumber].type = type;
+  obstacles[obstacleNumber].enabled = true;
+  obstacles[obstacleNumber].x = WIDTH - 1;
 
-    case ObstacleType::Pterodactyl1:  
-      obstacles[obstacleNumber].type = ObstacleType::Pterodactyl1;
-      obstacles[obstacleNumber].enabled = true;
-      obstacles[obstacleNumber].x = WIDTH - 1;
-      obstacles[obstacleNumber].y = random(PTERODACTYL_UPPER_LIMIT, PTERODACTYL_LOWER_LIMIT);
-      break;
+  if (type == ObstacleType::Pterodactyl1) {
 
+    obstacles[obstacleNumber].y = random(PTERODACTYL_UPPER_LIMIT, PTERODACTYL_LOWER_LIMIT);
+
+  }
+  else {
+
+    obstacles[obstacleNumber].y = CACTUS_GROUND_LEVEL;
+    
   }
  
 }
@@ -665,24 +606,10 @@ void drawGround(bool moveGround) {
 
   // Render the road.  
     
-    for (byte i = 0; i < 5; i++) {
-    
-      switch (ground[i]) {
-        
-        case GroundType::Flat:
-          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_flat, frame);   
-          break;
-          
-        case GroundType::Bump:
-          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_bump, frame);   
-          break;
-          
-        case GroundType::Hole:
-          Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_hole, frame);   
-          break;
-          
-      }
+  for (byte i = 0; i < 5; i++) {
   
-    }
+    Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_images[ground[i]], frame);   
+
+  }
 
 }
