@@ -50,7 +50,7 @@ struct Steve {
   int x;
   int y;
   Stance stance;
-  byte jumping;
+  bool jumping;
   byte jumpIndex;
   const byte *image;
   const byte *mask;
@@ -82,7 +82,7 @@ GroundType ground[5] = {
   GroundType::Flat,
 };
 
-Steve steve = {0, STEVE_GROUND_LEVEL, Standing, false, false};
+Steve steve = {0, STEVE_GROUND_LEVEL, Stance::Standing, false, false, dinosaur_still, dinosaur_still_mask };
 
 unsigned char jumpCoords[] = {55, 52, 47, 43, 40, 38, 36, 34, 33, 31, 30, 29, 28, 27, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 20, 20, 19, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 28, 29, 30, 31, 33, 34, 36, 38, 40, 43, 47, 51, 55,  };
 unsigned int score = 0;
@@ -534,9 +534,36 @@ void drawScoreboard(bool displayCurrentScore) {
  */
 void launchObstacle(byte obstacleNumber) {
 
-  ObstacleType randomUpper = (ObstacleType)(score > 300 ? ObstacleType::Count_AllObstacles : score / 75);
-  ObstacleType type = (ObstacleType)random(ObstacleType::SingleCactus, randomUpper);
 
+  // Randomly pick an obstacle ..
+  
+  ObstacleType randomUpper = ObstacleType::SingleCactus;
+  
+  switch (score) {
+
+    case 0 ... 99: 
+      randomUpper = ObstacleType::SingleCactus;
+      break;
+
+    case 100 ... 199: 
+      randomUpper = ObstacleType::DoubleCactus;
+      break;
+
+    case 200 ... 299: 
+      randomUpper = ObstacleType::TripleCactus;
+      break;
+
+    default:
+      randomUpper = ObstacleType::Count_AllObstacles;
+      break;
+      
+  }
+
+  ObstacleType type = (ObstacleType)random(ObstacleType::SingleCactus, randomUpper + 1);
+
+
+  // Launch the obstacle ..
+  
   obstacles[obstacleNumber].type = type;
   obstacles[obstacleNumber].enabled = true;
   obstacles[obstacleNumber].x = WIDTH - 1;
