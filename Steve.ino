@@ -167,7 +167,7 @@ void initialiseGame() {
  */
 void introduction() {
 
-//  highScore = EEPROMReadInt(EEPROM_SCORE);
+  EEPROM.get(EEPROM_SCORE, highScore);
   arduboy.clear();
 
   initialiseGame();
@@ -197,8 +197,8 @@ void introduction() {
 void gameOver() {
 
   if (score > highScore) {
-//    EEPROMWriteInt(EEPROM_SCORE, score);
     highScore = score;
+    EEPROM.put(EEPROM_SCORE, highScore);
   }
 
   arduboy.clear();
