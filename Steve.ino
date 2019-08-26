@@ -14,13 +14,13 @@
 #define OBSTACLE_LAUNCH_DELAY_MIN   90
 #define OBSTACLE_LAUNCH_DELAY_MAX   200
 
-enum GameStatus {
+enum class GameStatus : uint8_t {
   Introduction,
   PlayGame,
   GameOver,
 };
 
-enum Stance {
+enum class Stance : uint8_t {
   Standing,
   Running1,
   Running2,
@@ -30,7 +30,7 @@ enum Stance {
   Dead2,
 };
 
-enum ObstacleType {
+enum class ObstacleType : uint8_t {
   SingleCactus,
   DoubleCactus,
   TripleCactus,
@@ -40,33 +40,32 @@ enum ObstacleType {
   Count_AllObstacles = 4,
 };
 
-enum GroundType {
+enum class GroundType : uint8_t {
   Flat,
   Bump,
   Hole,
 };
 
 struct Steve {
-  int x;
-  int y;
+  uint8_t x;
+  uint8_t y;
   Stance stance;
   bool jumping;
-  byte jumpIndex;
-  const byte *image;
-  const byte *mask;
+  uint8_t jumpIndex;
+  const uint8_t *image;
+  const uint8_t *mask;
 };
 
 struct Obstacle {
-  int x;
-  int y;
+  int8_t x;
+  uint8_t y;
   ObstacleType type;
   bool enabled;
   const byte *image;
 };
 
 Arduboy2 arduboy;
-int frame = 0;
-int groundX = 0;
+uint8_t groundX = 0;
 
 Obstacle obstacles[NUMBER_OF_OBSTACLES] = {
   { 0, 0, ObstacleType::Pterodactyl1, false, pterodactyl_1 },
@@ -84,17 +83,17 @@ GroundType ground[5] = {
 
 Steve steve = {0, STEVE_GROUND_LEVEL, Stance::Standing, false, false, dinosaur_still, dinosaur_still_mask };
 
-unsigned char jumpCoords[] = {55, 52, 47, 43, 40, 38, 36, 34, 33, 31, 30, 29, 28, 27, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 20, 20, 19, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 28, 29, 30, 31, 33, 34, 36, 38, 40, 43, 47, 51, 55,  };
-unsigned int score = 0;
-unsigned int highScore = 0;
-unsigned int obstacleLaunchCountdown = OBSTACLE_LAUNCH_DELAY_MIN;
+uint8_t jumpCoords[] = {55, 52, 47, 43, 40, 38, 36, 34, 33, 31, 30, 29, 28, 27, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 20, 20, 19, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 26, 27, 28, 29, 30, 31, 33, 34, 36, 38, 40, 43, 47, 51, 55,  };
+uint16_t score = 0;
+uint16_t highScore = 0;
+uint16_t obstacleLaunchCountdown = OBSTACLE_LAUNCH_DELAY_MIN;
 
-GameStatus gameStatus = Introduction;
+GameStatus gameStatus = GameStatus::Introduction;
 
-const byte *steve_images[] = { dinosaur_still, dinosaur_running_1, dinosaur_running_2, dinosaur_ducking_1, dinosaur_ducking_2, dinosaur_dead_1, dinosaur_dead_2 };
-const byte *steve_masks[] = { dinosaur_still_mask, dinosaur_running_1_mask, dinosaur_running_2_mask, dinosaur_ducking_1_mask, dinosaur_ducking_2_mask, dinosaur_dead_2_mask, dinosaur_dead_2_mask };
-const byte *obstacle_images[] = { cactus_1, cactus_2, cactus_3, pterodactyl_1, pterodactyl_2 };
-const byte *ground_images[] = { ground_flat, ground_bump, ground_hole };
+const uint8_t *steve_images[] = { dinosaur_still, dinosaur_running_1, dinosaur_running_2, dinosaur_ducking_1, dinosaur_ducking_2, dinosaur_dead_1, dinosaur_dead_2 };
+const uint8_t *steve_masks[] = { dinosaur_still_mask, dinosaur_running_1_mask, dinosaur_running_2_mask, dinosaur_ducking_1_mask, dinosaur_ducking_2_mask, dinosaur_dead_2_mask, dinosaur_dead_2_mask };
+const uint8_t *obstacle_images[] = { cactus_1, cactus_2, cactus_3, pterodactyl_1, pterodactyl_2 };
+const uint8_t *ground_images[] = { ground_flat, ground_bump, ground_hole };
 
 
 /* -----------------------------------------------------------------------------------------------------------------------------
@@ -148,7 +147,7 @@ void loop() {
  */
 void initialiseGame() {
 
-  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+  for (uint8_t i = 0; i < NUMBER_OF_OBSTACLES; i++) {
     obstacles[i].enabled = false;
   }
 
@@ -244,7 +243,7 @@ void playGame() {
   if (!steve.jumping) {
 
     if (arduboy.justPressed(A_BUTTON))                          { steve.jumping = true; steve.jumpIndex = 0; }
-    if (arduboy.justPressed(B_BUTTON))                          { if (steve.stance != Stance::Ducking2) { steve.stance = Stance::Ducking1; }; } 
+    if (arduboy.justPressed(B_BUTTON))                          { if (steve.stance != Stance::Ducking2) { steve.stance = Stance::Ducking1; } } 
     if (arduboy.pressed(LEFT_BUTTON) && steve.x > 0)            { steve.x--; }
     if (arduboy.pressed(RIGHT_BUTTON) && steve.x < 100)         { steve.x++; }
 
@@ -265,7 +264,7 @@ void playGame() {
   
   if (obstacleLaunchCountdown == 0) {
 
-    for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+    for (uint8_t i = 0; i < NUMBER_OF_OBSTACLES; i++) {
 
       if (!obstacles[i].enabled) { 
         launchObstacle(i); 
@@ -323,7 +322,7 @@ void playGame() {
  */
 bool collision () {
     
-  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+  for (uint8_t i = 0; i < NUMBER_OF_OBSTACLES; i++) {
 
     if (obstacles[i].enabled == true) {
 
@@ -415,9 +414,11 @@ void updateSteve() {
  */
 void drawSteve() {
 
-  steve.image = steve_images[steve.stance];
-  steve.mask = steve_masks[steve.stance];
-  Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(steve.image), steve.image, steve.mask, frame, frame);
+  uint8_t imageIndex = static_cast<uint8_t>(steve.stance);
+
+  steve.image = steve_images[imageIndex];
+  steve.mask = steve_masks[imageIndex];
+  Sprites::drawExternalMask(steve.x, steve.y - getImageHeight(steve.image), steve.image, steve.mask, 0, 0);
   
 }
 
@@ -431,7 +432,7 @@ void drawSteve() {
  */
 void updateObstacles() {
 
-  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+  for (uint8_t i = 0; i < NUMBER_OF_OBSTACLES; i++) {
     
     if (obstacles[i].enabled == true) {
       
@@ -440,12 +441,12 @@ void updateObstacles() {
         case ObstacleType::Pterodactyl1:
         case ObstacleType::Pterodactyl2:
         
-          if (arduboy.everyXFrames(2)) {
-            if (obstacles[i].type == Pterodactyl1) { 
-              obstacles[i].type = Pterodactyl2;
+          if (arduboy.everyXFrames(6)) {
+            if (obstacles[i].type == ObstacleType::Pterodactyl1) { 
+              obstacles[i].type = ObstacleType::Pterodactyl2;
             }
             else {
-              obstacles[i].type = Pterodactyl1;
+              obstacles[i].type = ObstacleType::Pterodactyl1;
             }
           }
 
@@ -481,12 +482,13 @@ void updateObstacles() {
  */
 void drawObstacles() {
 
-  for (byte i = 0; i < NUMBER_OF_OBSTACLES; i++) {
+  for (uint8_t i = 0; i < NUMBER_OF_OBSTACLES; i++) {
     
     if (obstacles[i].enabled == true) {
 
-      obstacles[i].image = obstacle_images[obstacles[i].type];
-      Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(obstacles[i].image), obstacles[i].image, frame);      
+      uint8_t imageIndex = static_cast<uint8_t>(obstacles[i].type);
+      obstacles[i].image = obstacle_images[imageIndex];
+      Sprites::drawOverwrite(obstacles[i].x, obstacles[i].y - getImageHeight(obstacles[i].image), obstacles[i].image, 0);      
 
     }
     
@@ -532,7 +534,7 @@ void drawScoreboard(bool displayCurrentScore) {
  *  Launch a new obstacle ..
  * -----------------------------------------------------------------------------------------------------------------------------
  */
-void launchObstacle(byte obstacleNumber) {
+void launchObstacle(uint8_t obstacleNumber) {
 
 
   // Randomly pick an obstacle ..
@@ -559,7 +561,11 @@ void launchObstacle(byte obstacleNumber) {
       
   }
 
-  ObstacleType type = (ObstacleType)random(ObstacleType::SingleCactus, randomUpper + 1);
+  uint8_t randomLowerVal = static_cast<uint8_t>(ObstacleType::SingleCactus);
+  uint8_t randomUpperVal = static_cast<uint8_t>(randomUpper);
+  uint8_t raddomObstacle = random(randomLowerVal, randomUpperVal + 1);
+
+  ObstacleType type = static_cast<ObstacleType>(raddomObstacle);
 
 
   // Launch the obstacle ..
@@ -597,20 +603,21 @@ void drawGround(bool moveGround) {
 
       // Randomly select a new road type ..
 
-      byte type = random(0, 6);
+      uint8_t type = random(0, 6);
+      GroundType groundType;
 
       switch (type) {
 
         case 0 ... 3:
-          type = GroundType::Flat;
+          groundType = GroundType::Flat;
           break;
 
         case 4:
-          type = GroundType::Bump;
+          groundType = GroundType::Bump;
           break;
 
         case 5:
-          type = GroundType::Hole;
+          groundType = GroundType::Hole;
           break;
     
       }
@@ -622,7 +629,7 @@ void drawGround(bool moveGround) {
       ground[1] = ground[2];
       ground[2] = ground[3];
       ground[3] = ground[4];
-      ground[4] = (GroundType)type;
+      ground[4] = groundType;
 
     }
 
@@ -633,9 +640,10 @@ void drawGround(bool moveGround) {
 
   // Render the road.  
     
-  for (byte i = 0; i < 5; i++) {
+  for (uint8_t i = 0; i < 5; i++) {
   
-    Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_images[ground[i]], frame);   
+    uint8_t imageIndex = static_cast<uint8_t>(ground[i]);
+    Sprites::drawSelfMasked((i * 32) - groundX, GROUND_LEVEL, ground_images[imageIndex], 0);   
 
   }
 
