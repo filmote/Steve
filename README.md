@@ -140,7 +140,7 @@ A sprite is an image or graphic that represents a player, an enemy or even backg
 But before we get into those, let’s recap how we define a sprite.  The image below shows Steve in his upright, ready-to-run position.
 
 
-![Artwork/Steve%203.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.001.png)
+![Artwork/Steve%203.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.001.png)
 
 
 The array definition for this sprite is shown below.
@@ -183,21 +183,21 @@ The Arduboy library also provides some nice masking utilities that allow you to 
 Consider the following image and mask:
 
 
-![../Pipes_Article1_SpritesDemo/images/ball.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.002.png) ![../Pipes_Article1_SpritesDemo/images/mask.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.003.png)
+![../Pipes_Article1_SpritesDemo/images/ball.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.002.png) ![../Pipes_Article1_SpritesDemo/images/mask.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.003.png)
 
 
 As mentioned above, ```drawOverwrite()``` simply draws the sprite and overwrites what was already there. In the example below, the black corners of the ball are visible as the ball passes into the white area.
 
 
-![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_1.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.004.png)  ![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_2.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.005.png)  ![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_3.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.006.png)
+![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_1.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.004.png)  ![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_2.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.005.png)  ![../Pipes_Article1_SpritesDemo/images/DrawOverwrite_3.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.006.png)
 
 
 As the name implies, the ```drawExternalMask()``` function allows the image and mask to be nominated when rendering.  Bits set to 1 in the mask indicate that the pixel will be set to the value of the corresponding image bit.  Bits set to 0 in the mask will be left unchanged.  This can be seen clearly as the ball moves into the right hand side of the background.  The top-left and bottom-right corners of the image are rendered as black as the mask is set to 1 in these areas which in turn ensures that the images pixels (both zeroes and ones) are rendered on the background.
 
 
-![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_1.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.007.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_2.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.008.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_3.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.009.png)
+![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_1.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.007.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_2.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.008.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_3.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.009.png)
 
-![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_1.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.010.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_2.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.011.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_3.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.012.png)
+![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_1.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.010.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_2.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.011.png)  ![../Pipes_Article1_SpritesDemo/images/DrawExternalMask_S_3.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.012.png)
 
 
 A second article on Page 33 of the [Arduboy Magazine (Vol 7)](https://issuu.com/arduboymag/docs/vol_7Arduboy%20Magazine%20Volume%207) describes the various other mask options available and contains a link to a project that demonstrates the various techniques.
@@ -239,7 +239,7 @@ Frames can also be used as a basic counter and to animate graphics.  Later when 
 
 The illusion of movement in an endless runner is important to game play.  To provide a little variety, I have designed three separate graphics which include flat land, a bump and a pot-hole.  The variations are irrelevant to the game play.
 
-![../../../Desktop/Ground%201.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.013.png)        ![../../../Desktop/Ground%202.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.014.png)         ![../../../Desktop/Ground%203.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.015.png)
+![../../../Desktop/Ground%201.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.013.png)        ![../../../Desktop/Ground%202.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.014.png)         ![../../../Desktop/Ground%203.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.015.png)
 
 
 These are enumerated in an enum called ```GroundType```, as shown below.  The first element in an enumeration is implicitly assigned a value of zero and subsequent elements increase in value by one.  An array of images has also been declared with the images arranged in the same order as the enumeration allowing us to use the enumeration elements as index values to retrieve the images.
@@ -328,9 +328,9 @@ groundX++;
 When Steve is not standing around waiting for the game to begin he may be running, ducking or simply be dead.  These various states or stances are shown below.
 
 
-![../../../Desktop/Steve%201.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.016.png)        ![../../../Desktop/Steve%201.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.017.png)        ![../../../Desktop/Steve%202.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.018.png)        ![../../../Desktop/Steve%207.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.019.png)
+![../../../Desktop/Steve%201.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.016.png)        ![../../../Desktop/Steve%201.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.017.png)        ![../../../Desktop/Steve%202.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.018.png)        ![../../../Desktop/Steve%207.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.019.png)
 
-![../../../Desktop/Steve%204.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.020.png)      ![../../../Desktop/Steve%205.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.021.png)          ![../../../Desktop/Steve%206.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.022.png)
+![../../../Desktop/Steve%204.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.020.png)      ![../../../Desktop/Steve%205.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.021.png)          ![../../../Desktop/Steve%206.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.022.png)
 
 
 These stances are enumerated in an enum called ```Stance```.  As with the ground types detailed above, a matching array of dinosaur images has been declared with the images arranged in the same order as the Stance enumeration.  A second array of masks has also been declared – again with the masks in the same order as the ```Stance``` enumeration – to allow us to use the ```Stance``` values as indexes.
@@ -721,7 +721,7 @@ Hang on! This code isn’t the same as in the sample code.  Right .. the reason 
 This is shown in the example below.  Although the Arduboy ```collision()``` function reports a collision, they are clearly not touching.
 
 
-![../../../Desktop/SteveOverlap.png](Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.023.png)
+![../../../Desktop/SteveOverlap.png](README_Images/Aspose.Words.c20c4235-5805-4aa2-89bf-125951a0ee82.023.png)
 
 The code in the sample application uses a modified collision detection function that I have described in detail in the Arduboy Magazine which looks at the pixels of the images themselves rather than the containing rectangle to detect a collision.  
 
@@ -851,5 +851,4 @@ Finally, what could you change to make this version of the game your own?  Maybe
 You can download the finished game [here](https://github.com/filmote/Steve).
 
 Have fun and watch those pterodactyls.
-
 
