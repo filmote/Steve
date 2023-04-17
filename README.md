@@ -386,7 +386,7 @@ Now that we can draw Steve on the screen, we need to be able to move him around.
 
 Handling user input is generally handled in the main loop of the program.  The code below tests first whether Steve is jumping and, if not, allows the player to control him.  The Arduboy library provides four commands for detecting the pressing and releasing of buttons ```- justPressed()```, ```justReleased()```, ```pressed()``` and ```notPressed()```.   The first two commands are used in conjunction with the command ```pollButtons()```.
 
-A call to ```pollButtons()``` at the start of the main loop captures the current state of the Arduboy’s buttons.  The ```justPressed()``` and ```justReleased()``` commands will return true if the user has pressed a button since the last time ``````pollButtons() was called.  
+A call to ```pollButtons()``` at the start of the main loop captures the current state of the Arduboy’s buttons.  The ```justPressed()``` and ```justReleased()``` commands will return true if the user has pressed a button since the last time ```pollButtons()``` was called.  
 
 The ```pressed()``` command returns true if the nominated button is pressed or remains pressed over a period of time.  You can see that I am using the ```justPressed()``` command to detect a jump as it is a one off event whereas I am allowing the user to hold the left and right buttons to move continuously by using the ```pressed()``` command .
 
@@ -727,7 +727,6 @@ The code in the sample application uses a modified collision detection function 
 
 If you are interested, you can read this advanced article [here](https://issuu.com/arduboymag/docs/arduboy_magazine_8).  
 
-https://issuu.com/arduboymag/docs/arduboy_magazine_8
 # Saving Scores
 
 The Arduboy includes a small amount of non-volatile memory, known as EEPROM, which can store and retain information even when the unit is turned off.
